@@ -19,5 +19,5 @@
 #define MESSAGES_H
 
 // define the data structures for your messages here
-
+// :)
 #endif
