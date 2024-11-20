@@ -3,7 +3,7 @@
  * Interprocess Communication
  *
  * Lucia Bottlikova (1858947)
- * STUDENT_NAME_2 (STUDENT_NR_2)
+ * Laura Lesniak (1824473)
  * Briana Anamaria Isaila (1785923)
  *
  * Grading:
