@@ -2,7 +2,7 @@
  * Operating Systems  (2INCO)  Practical Assignment
  * Interprocess Communication
  *
- * STUDENT_NAME_1 (STUDENT_NR_1)
+ * Lucia Bottlikova (1858947)
  * Laura Lesniak (1824473)
  * STUDENT_NAME_2 (STUDENT_NR_2)
  *
