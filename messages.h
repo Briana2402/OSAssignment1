@@ -3,6 +3,7 @@
  * Interprocess Communication
  *
  * STUDENT_NAME_1 (STUDENT_NR_1)
+ * Laura Lesniak (1824473)
  * STUDENT_NAME_2 (STUDENT_NR_2)
  *
  * Grading:
