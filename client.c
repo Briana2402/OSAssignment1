@@ -28,13 +28,15 @@
 
 static void rsleep (int t);
 
-
+//  ** receive the name of the Req message queue as an argument when created by router dealer
 int main (int argc, char * argv[])
 {
     // TODO:
     // (see message_queue_test() in interprocess_basic.c)
-    //  * open the message queue (whose name is provided in the
-    //    arguments)
+    //  ** once started: 
+    //  * open the message (Req) queue (whose name is provided in the arguments)
+    //  ** start creating job requests by calling function getNextRequest(...) defined in request.h and request.c
+    //  ** check the output 
     //  * repeatingly:
     //      - get the next job request 
     //      - send the request to the Req message queue
