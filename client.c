@@ -28,7 +28,7 @@
 
 static void rsleep (int t);
 
-//  ** receive the name of the Req message queue as an argument when created by router dealer
+//  ** receive the name of the Req message queue as an (command line?) argument when created by router dealer
 int main (int argc, char * argv[])
 {
     // TODO:
@@ -36,9 +36,11 @@ int main (int argc, char * argv[])
     //  ** once started: 
     //  * open the message (Req) queue (whose name is provided in the arguments)
     //  ** start creating job requests by calling function getNextRequest(...) defined in request.h and request.c
-    //  ** check the output 
+    //  ** check the output (job ID, data to be treated, service ID)
     //  * repeatingly:
-    //      - get the next job request 
+    //      - get the next job request ** when no job request, return error code NO_REQ and release all resources and complete execution
+    //      ** create a message with required information
+    //      ** note that every request will have to be eventually processed
     //      - send the request to the Req message queue
     //    until there are no more requests to send
     //  * close the message queue
