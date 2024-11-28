@@ -31,6 +31,8 @@
 #include "messages.h"
 // ** cannot include request.h or request.c if any worker includes it
 
+#define GROUP_NR        "66"
+
 char client2dealer_name[30];
 char dealer2worker1_name[30];
 char dealer2worker2_name[30];
@@ -38,10 +40,40 @@ char worker2dealer_name[30];
 
 int main (int argc, char * argv[])
 {
+  pid_t           processID; 
+  MQ_REQUEST_MESSAGE  req;
+  MQ_RESPONSE_MESSAGE rsp;
+  mqd_t               mq_fd_request;
+  mqd_t               mq_fd_response;
+  struct mq_attr      attr;
+
+  //dynamically construct unique names for two message queues
+  sprintf (client2dealer_name, "/mq_request_%s_%d", GROUP_NR, getpid());
+  printf("%d\n", getpid());
+
+
+  attr.mq_maxmsg  = 10;
+  attr.mq_msgsize = sizeof (MQ_REQUEST_MESSAGE);
+  mq_fd_request = mq_open (client2dealer_name, O_WRONLY | O_CREAT | O_EXCL, 0600, &attr);
+
+
   if (argc != 1)
   {
+    //checks if multiple arguments were passed, which is invalid
     fprintf (stderr, "%s: invalid arguments\n", argv[0]);
+
+  } else {
+
+    processID = fork();
+    if (processID < 0)
+    {
+        perror("fork() failed");
+        exit (1);
+    }
   }
+
+  
+  
   
   // TODO:
     //  ** see interprocesses basics to see how to make processes and deal with message queues
@@ -51,6 +83,7 @@ int main (int argc, char * argv[])
     //    ** create S2, use the values from settings.h (MQ_MAX_MESSAGES)
     //    ** create Rsp, use the values from settings.h (MQ_MAX_MESSAGES)
     //    ** check if the creation was succesful, if successful, continue
+    
     //  * create the child processes (see process_test() and message_queue_test()):
     //    ** create one client process (give the name of the Req message queue as an argument, including our name, example in interprocesses_basics.c)
     //    ** create x number of worker processes implementing service 1 where x is N_SERV1 from settings.h (give the name of Rsp and S1 message queue as an argument, including our name, example in interprocesses_basics.c)
