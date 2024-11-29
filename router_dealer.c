@@ -85,12 +85,27 @@ int main (int argc, char * argv[])
     //    ** check if the creation was succesful, if successful, continue
     
     //  * create the child processes (see process_test() and message_queue_test()):
-    //    ** create one client process (give the name of the Req message queue as an argument, including our name, example in interprocesses_basics.c)
+  pid_t processID; /* Process ID from fork*/
+  printf("%d\n", getpid());
+
+  processID = fork();
+  if (processID < 0) {
+    perror("fork() failed");
+    exit(1);
+  } else {
+    if (processID == 0) { //**client code */
+    //    ** create one client process (give the name of the Req message queue as an argument, 
+    //       including our name, example in interprocesses_basics.c)
+      execlp("./client", "Req_queue_66", argv[0], NULL);
+      perror("execlp() failed");
+    } // ** Router dealer code
+    waitpid(processID, NULL, 0); // ** wait for the child (client)
+  }
     //    ** create x number of worker processes implementing service 1 where x is N_SERV1 from settings.h (give the name of Rsp and S1 message queue as an argument, including our name, example in interprocesses_basics.c)
     //    ** create x number of worker processes implementing service 2 where x is N_SERV2 from settings.h (~//~ Rsp and S2)
     //    ** check if the creation was successful, if successful, start monitoring Req and Rsp queues
     //  * read requests from the Req queue and transfer them to the workers
-    //    with the Sx queues **AS QUICKLY AS POSSIBLE
+    //    with the Sx queues **AS QUICKLY AS POSSIBLE, here we cant either busy wait
     //  * read answers from workers in the Rep queue and print them
     //  ** "request_id -> result" 
     //  * wait until the client has been stopped (see process_test())
