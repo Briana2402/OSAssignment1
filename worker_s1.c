@@ -32,6 +32,7 @@ static void rsleep (int t);
 //  ** receive the name of the Rsp and S1 message queue as an (command line?) argument when created by router dealer
 int main (int argc, char * argv[])
 {
+    printf("Printing from the worker 1\n");
     // TODO:
     // (see message_queue_test() in interprocess_basic.c)
     //  ** once started: 

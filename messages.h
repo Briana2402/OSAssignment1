@@ -23,8 +23,8 @@ typedef struct
 {
     // a data structure with 3 members
     int                    job;
-    int                    data;
     int                    service;
+    int                    data;
 } MQ_REQUEST_MESSAGE;
 
 typedef struct

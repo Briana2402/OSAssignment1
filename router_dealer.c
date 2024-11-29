@@ -33,42 +33,45 @@
 
 #define GROUP_NR        "66"
 
-char client2dealer_name[30];
-char dealer2worker1_name[30];
-char dealer2worker2_name[30];
-char worker2dealer_name[30];
+char Req_queue_[30];
+char S1_queue_[30];
+char S2_queue_[30];
+char Rsp_queue_[30];
+char worker_name[30];
+char queue_name[30];
+
 
 int main (int argc, char * argv[]) {
   
-  //checks if multiple arguments were passed, which is invalid
-  if (argc != 1) //too many arguments passed
+  // Checks if multiple arguments were passed, which is invalid
+  if (argc != 1) // Too many arguments passed
   {
     
     fprintf (stderr, "%s: invalid arguments\n", argv[0]);
 
-  //Comand is valid
+  // Command is valid
   } else {
-    pid_t           processID; 
-    MQ_REQUEST_MESSAGE  req;  //** create Req, use the values from settings.h (MQ_MAX_MESSAGES)
-    MQ_RESPONSE_MESSAGE rsp;  //    ** create Rsp, use the values from settings.h (MQ_MAX_MESSAGES)
-    mqd_t               mq_fd_request;
-    mqd_t               mq_fd_response;
-    struct mq_attr      attr;
-
-    //dynamically construct unique names for two message queues
-    sprintf (client2dealer_name, "/mq_request_%s_%d", GROUP_NR, getpid());
-    printf("%d\n", getpid());
-
-
-    attr.mq_maxmsg  = 10;
-    attr.mq_msgsize = sizeof (MQ_REQUEST_MESSAGE);
-    mq_fd_request = mq_open (client2dealer_name, O_WRONLY | O_CREAT | O_EXCL, 0600, &attr);
-
-
     // TODO:
     //  ** see interprocesses basics to see how to make processes and deal with message queues
     //  * create the message queues (see message_queue_test() in interprocess_basic.c)
-   
+
+    // Initialization
+    pid_t           processID;  
+    MQ_RESPONSE_MESSAGE rsp;  
+    mqd_t               client_request_channel;
+    mqd_t               mq_fd_response;
+    struct mq_attr      attr;
+
+    // Dynamically construct unique names for two message queues
+    sprintf(Req_queue_, "/mq_request_%s_%d", GROUP_NR, getpid());
+    printf("%d\n", getpid());
+
+    attr.mq_maxmsg  = MQ_MAX_MESSAGES ;
+    attr.mq_msgsize = sizeof (MQ_REQUEST_MESSAGE);
+    client_request_channel = mq_open (Req_queue_, O_RDONLY | O_CREAT | O_EXCL, 0600, &attr);
+
+    //** create Req, use the values from settings.h (MQ_MAX_MESSAGES)
+    //** create Rsp, use the values from settings.h (MQ_MAX_MESSAGES)
     //    ** create S1, use the values from settings.h (MQ_MAX_MESSAGES)
     //    ** create S2, use the values from settings.h (MQ_MAX_MESSAGES)
    
@@ -81,17 +84,60 @@ int main (int argc, char * argv[]) {
     if (processID < 0) {
       perror("fork() failed");
       exit(1);
+
     } else {
       if (processID == 0) { //**client code */
       //    ** create one client process (give the name of the Req message queue as an argument, 
       //       including our name, example in interprocesses_basics.c)
-        execlp("./client", "Req_queue_66", argv[0], NULL);
+        execlp("./client", Req_queue_, argv[0], NULL);
         perror("execlp() failed");
       } // ** Router dealer code
       waitpid(processID, NULL, 0); // ** wait for the child (client)
     }
-      //    ** create x number of worker processes implementing service 1 where x is N_SERV1 from settings.h (give the name of Rsp and S1 message queue as an argument, including our name, example in interprocesses_basics.c)
+    
+      processID = fork();
+      if (processID < 0) {
+        perror("fork() failed");
+        exit(1);
+      } else {
+      if (processID == 0) { //**child (S2) code */
       //    ** create x number of worker processes implementing service 2 where x is N_SERV2 from settings.h (~//~ Rsp and S2)
+        for (int i = 0; i < N_SERV2; i++) {
+          processID = fork();
+          if (processID < 0) {
+            perror("fork() failed");
+            exit(1);
+          } else {
+            if (processID == 0) { //**worker i code */
+              execlp("./worker_s2", S2_queue_, argv[0], NULL);
+              perror("execlp() failed");
+            } // ** Router dealer code
+            waitpid(processID, NULL, 0); // ** wait for the child (client)
+          } 
+        } 
+
+      } else { // **parent (S1) code */
+        
+        //    ** create x number of worker processes implementing service 1 where x is N_SERV1 from settings.h (give the name of Rsp and S1 message queue as an argument, including our name, example in interprocesses_basics.c)
+        for (int i = 0; i < N_SERV1; i++) {
+          processID = fork();
+          if (processID < 0) {
+            perror("fork() failed");
+            exit(1);
+          } else {
+          if (processID == 0) { //**worker i code */
+            execlp("./worker_s1", S1_queue_, argv[0], NULL);
+            perror("execlp() failed");
+          } // ** Router dealer code
+          waitpid(processID, NULL, 0); // ** wait for the child (client)
+        } 
+      } // ** Router dealer code
+      waitpid(processID, NULL, 0); // ** wait for the child (client)
+      }
+    }
+  
+  
+      
       //    ** check if the creation was successful, if successful, start monitoring Req and Rsp queues
       //  * read requests from the Req queue and transfer them to the workers
       //    with the Sx queues **AS QUICKLY AS POSSIBLE, here we cant either busy wait
